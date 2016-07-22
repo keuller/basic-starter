@@ -1,5 +1,4 @@
 # Basic Starter React Project
------
 
 This is a basic starter project to create React based apps.
 
