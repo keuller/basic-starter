@@ -17,8 +17,10 @@ module.exports = {
     },
 
     resolve: {
-        extensions: ['', '.js', '.jsx'],
-        modulesDirectories: ['src', 'node_modules']
+        modules: ['src', 'node_modules'],
+        extensions: ['.js', '.jsx'],
+        alias: {
+        }
     },
 
     node: {
@@ -26,17 +28,14 @@ module.exports = {
     },
 
     module: {
-        loaders: [
+        rules: [
             {
                 test: /\.jsx?$/,
                 loader: 'babel-loader',
-                exclude: /node_modules/,
-                query: {
-                    presets: ['es2015', 'react']
-                }
+                exclude: /node_modules/
             }, {
                 test: /\.css/,
-                loader: extractAPP.extract(['css']),
+                loader: extractAPP.extract(['css-loader']),
                 exclude: /node_modules/
             }
         ]
@@ -44,7 +43,6 @@ module.exports = {
 
     plugins: [
         extractAPP,
-        new webpack.optimize.OccurenceOrderPlugin(),
         new webpack.ProvidePlugin({
             'React': 'react'
         }),
@@ -56,6 +54,6 @@ module.exports = {
             port: 3000,
             server: { baseDir: [__dirname] }
         }, { reload: true }),
-        new webpack.NoErrorsPlugin()
+        new webpack.NoEmitOnErrorsPlugin()
     ]
 }
