@@ -1,13 +1,50 @@
-var path = require('path')
+let path = require('path')
   , webpack = require('webpack')
   , ExtractTextPlugin = require('extract-text-webpack-plugin')
   , BrowserSyncPlugin = require('browser-sync-webpack-plugin')
 
-var extractAPP = new ExtractTextPlugin('app.css')
+const addPath = (...args) => path.join(...args)
+
+const env = process.env.NODE_ENV || 'dev'
+
+const extractAPP = new ExtractTextPlugin('app.css')
+
+const prodPlugins = [
+    extractAPP,
+    new webpack.DefinePlugin({
+        'process.env':{
+            'NODE_ENV': "'production'"
+        }
+    }),
+    new webpack.ProvidePlugin({
+        'React': 'react'
+    }),
+    new webpack.optimize.UglifyJsPlugin({
+        compress: {
+            warnings: false
+        }
+    })
+]
+
+const devPlugins = [
+    extractAPP,
+    new webpack.ProvidePlugin({
+        'React': 'react'
+    }),
+    new webpack.optimize.CommonsChunkPlugin({
+        name: 'vendor'
+    }),
+    new BrowserSyncPlugin({
+        host: 'localhost',
+        port: 3000,
+        server: { baseDir: [__dirname] }
+    }, { reload: true }),
+    new webpack.NoEmitOnErrorsPlugin()
+]
 
 module.exports = {
     entry: {
-        bundler: path.join(__dirname, 'src/index.jsx'),
+        bundler: addPath(__dirname, 'src', 'index.jsx'),
         vendor: ['react', 'react-dom']
     },
 
@@ -18,9 +55,7 @@ module.exports = {
 
     resolve: {
         modules: ['src', 'node_modules'],
-        extensions: ['.js', '.jsx'],
-        alias: {
-        }
+        extensions: ['.js', '.jsx']
     },
 
     node: {
@@ -32,7 +67,15 @@ module.exports = {
             {
                 test: /\.jsx?$/,
                 loader: 'babel-loader',
-                exclude: /node_modules/
+                exclude: /node_modules/,
+                query: {
+                    presets: ['es2015', 'react', 'react-optimize'],
+                    env: {
+                        production: {
+                            presets: ["react-optimize"]
+                        }
+                    }
+                }
             }, {
                 test: /\.css/,
                 loader: extractAPP.extract(['css-loader']),
@@ -41,19 +84,5 @@ module.exports = {
         ]
     },
 
-    plugins: [
-        extractAPP,
-        new webpack.ProvidePlugin({
-            'React': 'react'
-        }),
-        new webpack.optimize.CommonsChunkPlugin({
-            name: 'vendor'
-        }),
-        new BrowserSyncPlugin({
-            host: 'localhost',
-            port: 3000,
-            server: { baseDir: [__dirname] }
-        }, { reload: true }),
-        new webpack.NoEmitOnErrorsPlugin()
-    ]
+    plugins: (env === 'dev' ? devPlugins : prodPlugins)
 }

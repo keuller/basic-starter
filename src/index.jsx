@@ -1,11 +1,13 @@
 import 'index.css'
 import { render } from 'react-dom'
 
-let Sample = (props) => {
-  return (<div>Basic React Starter</div>)
-}
+let App = (props) => (
+    <main>
+        <h2>Basic React Starter</h2>
+    </main>
+)
 
 document.addEventListener('DOMContentLoaded', (evt) => {
-  console.log('Basic React Starter')
-  render(<Sample />, document.querySelector('#app'))
+    console.log('Basic React Starter')
+    render(<App />, document.querySelector('#app'))
 })
