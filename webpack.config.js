@@ -1,61 +1,86 @@
 var path = require('path')
-  , webpack = require('webpack')
+var webpack = require('webpack')
   , ExtractTextPlugin = require('extract-text-webpack-plugin')
-  , BrowserSyncPlugin = require('browser-sync-webpack-plugin')
 
-var extractAPP = new ExtractTextPlugin('app.css')
+var cssLoader = ExtractTextPlugin.extract({
+    use: 'css-loader'
+})
+
 
 module.exports = {
-    entry: {
-        bundler: path.join(__dirname, 'src/index.jsx'),
-        vendor: ['react', 'react-dom']
-    },
+  entry:{
+    bundle: './src/index.jsx',
+    vendor: ['react', 'react-dom'],
+  },
 
-    output: {
-        path: path.join(__dirname, 'dist'),
-        filename: '[name].js'
-    },
+  output: {
+    path: path.resolve(__dirname, './dist'),
+    publicPath: '/dist/',
+    filename: '[name].js'
+  },
 
-    resolve: {
-        extensions: ['', '.js', '.jsx'],
-        modulesDirectories: ['src', 'node_modules']
-    },
-
-    node: {
-        fs: 'empty'
-    },
-
-    module: {
-        loaders: [
-            {
-                test: /\.jsx?$/,
-                loader: 'babel-loader',
-                exclude: /node_modules/,
-                query: {
-                    presets: ['es2015', 'react']
-                }
-            }, {
-                test: /\.css/,
-                loader: extractAPP.extract(['css']),
-                exclude: /node_modules/
-            }
-        ]
-    },
-
-    plugins: [
-        extractAPP,
-        new webpack.optimize.OccurenceOrderPlugin(),
-        new webpack.ProvidePlugin({
-            'React': 'react'
-        }),
-        new webpack.optimize.CommonsChunkPlugin({
-            name: 'vendor'
-        }),
-        new BrowserSyncPlugin({
-            host: 'localhost',
-            port: 3000,
-            server: { baseDir: [__dirname] }
-        }, { reload: true }),
-        new webpack.NoErrorsPlugin()
+  module: {
+    rules: [
+      {
+        test: /\.(js|jsx)$/,
+        loader: 'babel-loader',
+        exclude: /node_modules/
+      }, {
+        test: /\.css$/,
+        loader: cssLoader
+      }, {
+        test: /\.(png|jpg|gif|svg)$/,
+        loader: 'file-loader',
+        options: {
+          name: '[name].[ext]?[hash]'
+        }
+      }
     ]
+  },
+
+  resolve: {
+    modules: ['src', 'node_modules'],
+    extensions: ['.js', '.jsx'],
+    alias: {
+    }
+  },
+
+  devServer: {
+    historyApiFallback: true,
+    port: '8000',
+    noInfo: true
+  },
+
+  devtool: '#eval-source-map',
+
+  plugins: [
+    new webpack.NoEmitOnErrorsPlugin(),
+    new webpack.DefinePlugin({
+        'React': 'react' 
+    }),
+    new ExtractTextPlugin("app.css"),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: ['vendor'],
+      warnings: false
+    })
+  ]
+}
+
+if (process.env.NODE_ENV === 'production') {
+  module.exports.devtool = '#source-map'
+  module.exports.plugins = (module.exports.plugins || []).concat([
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: '"production"'
+      }
+    }),
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        warnings: false
+      }
+    }),
+    new webpack.LoaderOptionsPlugin({
+      minimize: true
+    })
+  ])
 }
