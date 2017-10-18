@@ -4,7 +4,7 @@ import { render } from 'react-dom'
 
 let App = (props) => (
     <main>
-        <h2>Basic React Starter</h2>
+        <h2>Basic React Boilerplate</h2>
     </main>
 )
 
